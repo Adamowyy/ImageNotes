@@ -1,0 +1,43 @@
+ImageNotes — notatki na zdjęciach i mapach
+Copyright (c) 2026 Adam Warzecha. Wszelkie prawa zastrzeżone.
+
+Autor: Adam Warzecha
+Program: ImageNotes 1.0.0 (Windows, Python + PySide6/Qt 6)
+
+------------------------------------------------------------------
+Wszelkie prawa zastrzeżone
+------------------------------------------------------------------
+Program ImageNotes wraz z całym kodem źródłowym, grafiką i dokumentacją
+jest autorstwa Adama Warzechy i stanowi jego własność.
+
+Bez pisemnej zgody autora nie wolno:
+  * przypisywać sobie autorstwa tego programu ani jego części,
+  * rozpowszechniać, sprzedawać ani udostępniać go jako własnego
+    produktu (także pod inną nazwą),
+  * usuwać ani zmieniać informacji o autorze zawartych w kodzie,
+    interfejsie, metadanych zapisywanych plików i właściwościach
+    pliku ImageNotes.exe.
+
+Korzystanie z programu przez autora oraz osoby, którym autor go
+przekazał, jest dozwolone nieodpłatnie.
+
+------------------------------------------------------------------
+All rights reserved
+------------------------------------------------------------------
+ImageNotes and its entire source code, artwork and documentation were
+created by Adam Warzecha and remain his property.
+
+Without the author's written permission you may not claim authorship
+of this program or any part of it, redistribute or sell it as your own
+product (including under a different name), or remove/alter the author
+information embedded in the source code, user interface, saved-file
+metadata and in the ImageNotes.exe file properties.
+
+Use by the author and by people to whom the author handed the program
+is permitted free of charge.
+
+------------------------------------------------------------------
+Podpis autora znajdziesz też:
+  * w interfejsie — dolna linia panelu narzędzi (klik = okno "O programie"),
+  * w metadanych każdego zapisanego pliku: Author / Artist / Copyright,
+  * we właściwościach pliku ImageNotes.exe (zakładka Szczegóły).

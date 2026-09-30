@@ -1,0 +1,12 @@
+# Normalizacja końców linii — w repo trzymamy LF, pliki binarne bez zmian
+* text=auto
+
+*.py   text eol=lf
+*.pyw  text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.json text eol=lf
+*.ico  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary

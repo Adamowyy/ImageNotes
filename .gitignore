@@ -1,0 +1,15 @@
+# Pliki robocze z notatkami (nadpisywane przy każdej edycji)
+workspace/
+
+# Gotowe paczki i śmieci po budowaniu EXE
+dist/
+build/
+
+# Ustawienia lokalne (rozmiar okna, ostatni katalog)
+settings.json
+
+# Zrzuty i artefakty testów
+tests/artifacts/
+
+__pycache__/
+*.pyc
