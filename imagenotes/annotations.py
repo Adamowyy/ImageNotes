@@ -1,4 +1,4 @@
-"""Model adnotacji: tekst, strzałka, X, checkmark i rysowanie odręczne."""
+"""Annotation model: text, arrow, cross, checkmark and freehand stroke."""
 
 from __future__ import annotations
 
@@ -26,14 +26,14 @@ KIND_STROKE = "stroke"
 
 LINE_KINDS = (KIND_ARROW, KIND_CROSS, KIND_CHECK, KIND_STROKE)
 
-# Ciemna otoczka pod tekstem — czytelność na jasnej i ciemnej mapie
+# Dark outline under the text, readable on a light and a dark map alike
 TEXT_OUTLINE = QColor(0, 0, 0, 175)
 
 _FONT_FAMILY: Optional[str] = None
 
 
 def _font_family() -> str:
-    """Rodzina czcionki z fallbackiem — 'Segoe UI' nie istnieje poza Windows."""
+    """Font family with a fallback; 'Segoe UI' does not exist off Windows."""
     global _FONT_FAMILY
     if _FONT_FAMILY is None:
         try:
@@ -45,12 +45,12 @@ def _font_family() -> str:
                 _FONT_FAMILY = candidate
                 break
         else:
-            _FONT_FAMILY = ""      # pusta nazwa = domyślna czcionka Qt
+            _FONT_FAMILY = ""      # empty name = Qt's default font
     return _FONT_FAMILY
 
 
 def font_for(size: float) -> QFont:
-    """Czcionka adnotacji tekstowej; rozmiar w pikselach zdjęcia."""
+    """Font for a text annotation; the size is in image pixels."""
     f = QFont(_font_family())
     f.setPixelSize(max(4, int(round(size))))
     f.setWeight(QFont.Weight.DemiBold)
@@ -58,7 +58,7 @@ def font_for(size: float) -> QFont:
 
 
 def text_local_rect(text: str, size: float) -> QRectF:
-    """Obrys tekstu w układzie lokalnym (początek = punkt bazowy tekstu)."""
+    """Text outline in local coordinates (origin = the text baseline)."""
     if not text:
         return QRectF(0.0, 0.0, 0.0, 0.0)
     path = QPainterPath()
@@ -67,7 +67,7 @@ def text_local_rect(text: str, size: float) -> QRectF:
 
 
 def _seg_distance(a: QPointF, b: QPointF, p: QPointF) -> float:
-    """Odległość punktu p od odcinka a-b."""
+    """Distance from point p to the segment a-b."""
     ax, ay, bx, by, px, py = a.x(), a.y(), b.x(), b.y(), p.x(), p.y()
     dx, dy = bx - ax, by - ay
     length_sq = dx * dx + dy * dy
@@ -85,7 +85,7 @@ def _polyline_distance(points: Sequence[QPointF], p: QPointF) -> float:
 
 @dataclass(eq=False)
 class Annotation:
-    """Pojedynczy element notatki na zdjęciu."""
+    """A single annotation on the image."""
 
     kind: str
     p1: QPointF
@@ -97,7 +97,7 @@ class Annotation:
     size: int = 72
     angle: float = 0.0
 
-    # --- serializacja ----------------------------------------------------
+    # --- serialization ---------------------------------------------------
     def to_dict(self) -> dict:
         return {
             "kind": self.kind,
@@ -131,14 +131,14 @@ class Annotation:
     def copy(self) -> "Annotation":
         return Annotation.from_dict(self.to_dict())
 
-    # --- geometria -------------------------------------------------------
+    # --- geometry --------------------------------------------------------
     @property
     def qcolor(self) -> QColor:
         c = QColor(self.color)
         return c if c.isValid() else QColor("#ff2d2d")
 
     def _bbox(self) -> QRectF:
-        """Prostokąt rozciągnięty między p1 i p2 (znormalizowany)."""
+        """Rect spanned between p1 and p2 (normalized)."""
         if self.p2 is None:
             return QRectF(self.p1, self.p1)
         return QRectF(self.p1, self.p2).normalized()
@@ -150,7 +150,7 @@ class Annotation:
         return [QPointF(x + nx * w, y + ny * h) for nx, ny in norm]
 
     def bounds(self) -> QRectF:
-        """Obrys adnotacji w px zdjęcia (używany do zaznaczenia i trafień)."""
+        """Annotation outline in image px (used for selection and hit tests)."""
         if self.kind == KIND_TEXT:
             rect = text_local_rect(self.text, self.size)
             t = QTransform().translate(self.p1.x(), self.p1.y()).rotate(self.angle)
@@ -170,7 +170,7 @@ class Annotation:
         self.points = [QPointF(p.x() + dx, p.y() + dy) for p in self.points]
 
     def hits(self, pt: QPointF, tol: float) -> bool:
-        """Czy punkt (px zdjęcia) trafia w adnotację. `tol` w px zdjęcia."""
+        """Whether a point (image px) hits the annotation. `tol` is in image px."""
         if self.kind == KIND_TEXT:
             if not self.text:
                 return False
@@ -200,7 +200,7 @@ class Annotation:
             return _polyline_distance(self.points, pt) <= slack
         return False
 
-    # --- rysowanie -------------------------------------------------------
+    # --- drawing ---------------------------------------------------------
     def _pen(self) -> QPen:
         pen = QPen(self.qcolor)
         pen.setWidthF(max(1.0, float(self.width)))
@@ -264,7 +264,7 @@ class Annotation:
         head = min(max(16.0, self.width * 3.4), length * 0.75)
         base = QPointF(self.p2.x() - ux * head, self.p2.y() - uy * head)
 
-        # Linia kończy się WEWNĄTRZ grota (15% długości grota przed podstawą grota).
+        # The shaft ends INSIDE the head (15% of the head length before its base).
         end = QPointF(self.p2.x() - ux * head * 0.85, self.p2.y() - uy * head * 0.85)
         painter.setPen(self._pen())
         painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -301,7 +301,7 @@ class Annotation:
 
 
 def draw_selection(painter: QPainter, rect: QRectF) -> None:
-    """Ramka zaznaczenia rysowana piórem kosmetycznym (zawsze 1-2 px na ekranie)."""
+    """Selection frame drawn with a cosmetic pen (always 1-2 px on screen)."""
     pen = QPen(QColor(255, 212, 0))
     pen.setCosmetic(True)
     pen.setWidth(2)
@@ -312,7 +312,7 @@ def draw_selection(painter: QPainter, rect: QRectF) -> None:
 
 
 def render_annotations(painter: QPainter, annotations: Iterable[Annotation]) -> None:
-    """Wspólny renderer dla podglądu i zapisu do pliku."""
+    """Shared renderer for the on-screen preview and the file write."""
     painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
     painter.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
     for a in annotations:
@@ -320,7 +320,7 @@ def render_annotations(painter: QPainter, annotations: Iterable[Annotation]) -> 
 
 
 def pick_annotation(annotations: Sequence[Annotation], pt: QPointF, tol: float) -> Optional[Annotation]:
-    """Najwyżej leżąca adnotacja pod kursorem (od końca listy = od góry stosu)."""
+    """Topmost annotation under the cursor (from the end of the list)."""
     for a in reversed(annotations):
         if a.hits(pt, tol):
             return a

@@ -1,4 +1,4 @@
-"""Generuje ikonę aplikacji (assets/imagenotes.ico + .png) bez zależności zewnętrznych."""
+"""Generate the app icon (assets/imagenotes.ico + .png) with no external dependencies."""
 
 from __future__ import annotations
 
@@ -18,13 +18,13 @@ BASE = 256
 
 
 def render_icon(size: int = BASE) -> QImage:
-    """Rysuje ikonę w zadanym rozmiarze (baza 256 px, potem skalowanie)."""
+    """Draw the icon at a given size (256 px base, then scaled down)."""
     img = QImage(BASE, BASE, QImage.Format.Format_ARGB32)
     img.fill(Qt.GlobalColor.transparent)
     painter = QPainter(img)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
-    # tło: ciemny zaokrąglony kwadrat z delikatnym gradientem
+    # background: dark rounded square with a soft gradient
     bg = QLinearGradient(0, 0, 0, BASE)
     bg.setColorAt(0.0, QColor("#2b2f38"))
     bg.setColorAt(1.0, QColor("#15171c"))
@@ -32,18 +32,18 @@ def render_icon(size: int = BASE) -> QImage:
     painter.setPen(QPen(QColor(255, 255, 255, 45), 3))
     painter.drawRoundedRect(QRectF(6, 6, BASE - 12, BASE - 12), 54, 54)
 
-    # "kartka mapy"
+    # the "map sheet"
     sheet = QRectF(46, 52, 164, 152)
     painter.setPen(Qt.PenStyle.NoPen)
     painter.setBrush(QColor("#e9ebf1"))
     painter.drawRoundedRect(sheet, 14, 14)
 
-    # drogi / siatka na mapie
+    # roads / grid on the map
     painter.setPen(QPen(QColor("#b9c0cd"), 7))
     painter.drawLine(QPointF(70, 170), QPointF(150, 92))
     painter.setPen(QPen(QColor("#cdd3dd"), 5))
     painter.drawLine(QPointF(66, 100), QPointF(192, 148))
-    # "góry"
+    # mountains
     mountains = QPainterPath()
     mountains.moveTo(70, 190)
     mountains.lineTo(118, 138)
@@ -55,7 +55,7 @@ def render_icon(size: int = BASE) -> QImage:
     painter.setPen(Qt.PenStyle.NoPen)
     painter.drawPath(mountains)
 
-    # czerwona strzałka-notatka (czytelna nawet w 16 px)
+    # red annotation arrow (readable even at 16 px)
     pen = QPen(QColor("#ff2d2d"), 26)
     pen.setCapStyle(Qt.PenCapStyle.RoundCap)
     painter.setPen(pen)
@@ -83,7 +83,7 @@ def png_bytes(img: QImage) -> bytes:
 
 
 def write_ico(path: Path, images) -> None:
-    """Składa wielorozmiarowy plik ICO z payloadów PNG."""
+    """Assemble a multi-size ICO from PNG payloads."""
     count = len(images)
     header = struct.pack("<HHH", 0, 1, count)
     directory = b""
@@ -98,13 +98,13 @@ def write_ico(path: Path, images) -> None:
 
 
 def main() -> int:
-    app = QGuiApplication.instance() or QGuiApplication([])  # noqa: F841 - wymagane przez QPainter
+    app = QGuiApplication.instance() or QGuiApplication([])  # noqa: F841 - QPainter needs it
     config.ensure_dirs()
     images = [(size, png_bytes(render_icon(size))) for size in SIZES]
     ico_path = config.ASSETS_DIR / "imagenotes.ico"
     write_ico(ico_path, images)
     render_icon(BASE).save(str(config.ASSETS_DIR / "imagenotes.png"), "PNG")
-    print(f"Ikona: {ico_path} ({ico_path.stat().st_size} B, {len(images)} rozmiarow)")
+    print(f"Icon: {ico_path} ({ico_path.stat().st_size} B, {len(images)} sizes)")
     return 0
 
 

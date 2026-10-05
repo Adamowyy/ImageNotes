@@ -1,4 +1,4 @@
-"""Okno główne: płótno + lewitujące nakładki, autozapis, drag&drop i skróty klawiaturowe."""
+"""Main window: the canvas plus its floating overlays, autosave, drag & drop and shortcuts."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from .overlay import RecentBubble, RecentPopup, ToolPanel
 
 
 class MainWindow(QMainWindow):
-    """Minimalistyczne okno: tylko zdjęcie i dwie lewitujące nakładki."""
+    """Minimal window: just the image and two floating overlays."""
 
     def __init__(self, settings: dict, initial_path: Optional[Path] = None, parent=None):
         super().__init__(parent)
@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         if initial_path is not None:
             self.open_image(initial_path)
 
-    # Podłączanie sygnałów
+    # --- signal wiring ---------------------------------------------------
     def _wire(self) -> None:
         self.canvas.edited.connect(self._on_edited)
         self.canvas.selectionChanged.connect(self._sync_selection)
@@ -99,7 +99,7 @@ class MainWindow(QMainWindow):
         sc("Ctrl+-", self.canvas.zoom_out)
         sc("F11", self._toggle_fullscreen)
 
-    # Edycja / zapis
+    # --- editing / saving ------------------------------------------------
     def _on_edited(self) -> None:
         self.panel.set_state("dirty")
         self._autosave.start()
@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
         self.canvas.redo()
 
     def _save_now(self, force: bool = False) -> None:
-        """Zapis do pliku roboczego. Bez zmian nic nie zapisujemy (force = Ctrl+S / przycisk)."""
+        """Write the working file. Nothing changed means nothing to write (force = Ctrl+S / button)."""
         doc = self.canvas.document
         if doc is None:
             return
@@ -139,7 +139,7 @@ class MainWindow(QMainWindow):
         else:
             print(f"[ImageNotes] błąd zapisu ({key}): {message}")
 
-    # Otwieranie zdjęć
+    # --- opening images --------------------------------------------------
     def open_image(self, path) -> None:
         path = Path(str(path))
         if not path.exists():
@@ -153,7 +153,7 @@ class MainWindow(QMainWindow):
             self._raise()
             return
 
-        self._save_now()  # domknięcie poprzedniego zdjęcia (zapis idzie w tle)
+        self._save_now()  # close the previous image (the write happens in the background)
         self.canvas.set_message(f"Wczytuj\u0119 {path.name}\u2026")
         self.panel.set_state("idle", str(path))
         self._loader = ImageLoader(path, self)
@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
         config.ensure_dirs()
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(config.WORKSPACE_DIR)))
 
-    # Nakładki
+    # --- overlays --------------------------------------------------------
     def _reposition_overlays(self) -> None:
         margin = 12
         self.panel.adjustSize()
@@ -256,7 +256,7 @@ class MainWindow(QMainWindow):
             f"{zoom_text} \u2022 notatki: {len(doc.annotations)}{dirty} \u2022 {config.AUTHOR_CREDIT}"
         )
 
-    # Drag & drop, zamykanie
+    # --- drag & drop, closing --------------------------------------------
     def dragEnterEvent(self, event) -> None:  # noqa: D102
         if self._dropped_image(event) is not None:
             event.acceptProposedAction()
@@ -301,7 +301,7 @@ class MainWindow(QMainWindow):
         config.save_settings(self.settings)
         super().closeEvent(event)
 
-    # Pomocnicze
+    # --- helpers ---------------------------------------------------------
     def _raise(self) -> None:
         if self.isMinimized():
             self.showNormal()

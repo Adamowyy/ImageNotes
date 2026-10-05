@@ -1,4 +1,4 @@
-"""Płótno: wyświetlanie ogromnych zdjęć, panowanie prawym przyciskiem i notowanie."""
+"""Canvas: displays huge images, pans with the right button and hosts the annotations."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ UNDO_DEPTH = 120
 
 
 class _TextEditor(QLineEdit):
-    """Jednoliniowy edytor tekstu adnotacji (Esc anuluje, Enter/zgubienie fokusu zatwierdza)."""
+    """Single-line annotation editor (Esc cancels, Enter/focus loss commits)."""
 
     escapePressed = Signal()
 
@@ -58,14 +58,14 @@ class _TextEditor(QLineEdit):
 
 
 class CanvasWidget(QWidget):
-    """Widok zdjęcia z adnotacjami."""
+    """Image view with annotations."""
 
-    edited = Signal()             # cokolwiek zmienione -> autozapis
+    edited = Signal()             # anything changed -> autosave
     selectionChanged = Signal()
     zoomChanged = Signal(float)
     documentChanged = Signal()
     resized = Signal()
-    toolRequested = Signal(str)   # zmiana narzędzia z klawiatury -> synchronizacja panelu
+    toolRequested = Signal(str)   # tool changed from the keyboard -> sync the panel
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -104,7 +104,7 @@ class CanvasWidget(QWidget):
 
         self._bg = QColor(26, 27, 31)
 
-    # Dokument
+    # --- document --------------------------------------------------------
     @property
     def document(self):
         return self._doc
@@ -128,7 +128,7 @@ class CanvasWidget(QWidget):
         self._message = text or ""
         self.update()
 
-    # Widok: transformacje, pan, zoom
+    # --- view: transforms, pan, zoom -------------------------------------
     def view_transform(self) -> QTransform:
         return QTransform().translate(self._origin.x(), self._origin.y()).scale(self._scale, self._scale)
 
@@ -189,7 +189,7 @@ class CanvasWidget(QWidget):
         self.zoomChanged.emit(self._scale)
         self.update()
 
-    # Zdarzenia rozmiaru / myszy / klawiatury
+    # --- size / mouse / keyboard events ----------------------------------
     def resizeEvent(self, event) -> None:  # noqa: D102
         super().resizeEvent(event)
         self.resized.emit()
@@ -306,7 +306,7 @@ class CanvasWidget(QWidget):
             anno: Annotation = self._drag["anno"]
             if anno.kind != KIND_STROKE:
                 if anno.p2 is None or math.hypot(anno.p2.x() - anno.p1.x(), anno.p2.y() - anno.p1.y()) * self._scale < 6:
-                    # Kliknięcie bez przeciągania: wstaw sensowny kształt w domyślnym rozmiarze
+                    # A click without dragging: drop a sensible default-sized shape
                     size = 220.0 / max(self._scale, 1e-6)
                     anno.p2 = QPointF(anno.p1.x() + size, anno.p1.y() + size)
         self._drag = None
@@ -365,7 +365,7 @@ class CanvasWidget(QWidget):
             return
         super().keyPressEvent(event)
 
-    # Narzędzia i właściwości
+    # --- tools and properties --------------------------------------------
     def set_tool(self, tool: str) -> None:
         if tool not in TOOLS:
             return
@@ -410,7 +410,7 @@ class CanvasWidget(QWidget):
             return
         if self._sel is self._editing:
             return
-        # Suwak to jedna operacja cofnięcia, nie sto — stąd "gesture"
+        # A slider drag is one undo step, not a hundred, hence "gesture"
         if not self._gesture or not self._gesture_undo_done:
             self.push_undo()
             self._gesture_undo_done = True
@@ -419,7 +419,7 @@ class CanvasWidget(QWidget):
         self._finish_change(keep_selection=True)
 
     def begin_gesture(self) -> None:
-        """Początek ciągłej zmiany (przeciąganie suwaka) — jedno cofnięcie na gest."""
+        """Start of a continuous change (slider drag): one undo step per gesture."""
         self._gesture = True
         self._gesture_undo_done = False
 
@@ -427,7 +427,7 @@ class CanvasWidget(QWidget):
         self._gesture = False
         self._gesture_undo_done = False
 
-    # Zaznaczenie, edycja tekstu, cofanie
+    # --- selection, text editing, undo -----------------------------------
     @property
     def selection(self) -> Optional[Annotation]:
         return self._sel
@@ -492,7 +492,7 @@ class CanvasWidget(QWidget):
         anno, self._editing = self._editing, None
         self._editor.hide()
         if anno is not None and self._doc is not None and not anno.text and anno in self._doc.annotations:
-            # Anulowana nowa adnotacja — nie zostawiaj pustego tekstu
+            # A cancelled new annotation: do not leave empty text behind
             self._doc.annotations.remove(anno)
             if self._sel is anno:
                 self._sel = None
@@ -543,7 +543,7 @@ class CanvasWidget(QWidget):
         self.edited.emit()
         self.update()
 
-    # Rysowanie
+    # --- drawing ---------------------------------------------------------
     def paintEvent(self, event) -> None:  # noqa: D102
         painter = QPainter(self)
         painter.fillRect(self.rect(), self._bg)

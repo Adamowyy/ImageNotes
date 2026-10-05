@@ -1,4 +1,4 @@
-"""Punkt wejścia dla `python -m imagenotes`."""
+"""Entry point for `python -m imagenotes`."""
 
 from .app import main
 

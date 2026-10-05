@@ -1,4 +1,4 @@
-"""Bootstrap aplikacji: pojedyncza instancja, ciemny motyw, otwieranie pliku z argumentu."""
+"""Application bootstrap: single instance, dark theme, image passed on the command line."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ IPC_TIMEOUT_MS = 400
 
 
 def _target_from_args(argv: List[str]) -> Optional[Path]:
-    """Wyciąga ścieżkę zdjęcia z argumentów (obsługuje też `--open <plik>`)."""
+    """Pull the image path out of the arguments (also handles `--open <file>`)."""
     args = list(argv)
     if "--open" in args:
         index = args.index("--open")
@@ -38,7 +38,7 @@ def _target_from_args(argv: List[str]) -> Optional[Path]:
 
 
 def _send_to_running_instance(target: Optional[Path]) -> bool:
-    """Próbuje przekazać ścieżkę do działającej instancji. True = przekazano i wychodzimy."""
+    """Hand the path to a running instance. True = delivered, so exit now."""
     socket = QLocalSocket()
     socket.connectToServer(IPC_NAME)
     if not socket.waitForConnected(IPC_TIMEOUT_MS):
@@ -52,9 +52,9 @@ def _send_to_running_instance(target: Optional[Path]) -> bool:
 
 
 def _start_ipc_server(window: MainWindow) -> Optional[QLocalServer]:
-    """Serwer lokalnego gniazda: kolejny start aplikacji tylko otwiera zdjęcie tutaj."""
+    """Local socket server: another launch only opens its image here."""
     try:
-        QLocalServer.removeServer(IPC_NAME)   # osierocony socket po ewentualnym crashu
+        QLocalServer.removeServer(IPC_NAME)   # socket orphaned by an earlier crash
         server = QLocalServer(window)
         if not server.listen(IPC_NAME):
             return None
@@ -81,7 +81,7 @@ def _start_ipc_server(window: MainWindow) -> Optional[QLocalServer]:
 
 
 def _dark_palette() -> QPalette:
-    """Ciemny motyw (Fusion), żeby okna dialogowe nie raziły bielą."""
+    """Dark Fusion palette, so dialogs do not flash white."""
     palette = QPalette()
     base = QColor(26, 27, 31)
     alt = QColor(36, 38, 43)
@@ -106,7 +106,7 @@ def _dark_palette() -> QPalette:
 
 def main(argv: Optional[List[str]] = None) -> int:
     config.ensure_dirs()
-    storage.cleanup_temp_files()   # po crashu mogły zostać pliki .tmp
+    storage.cleanup_temp_files()   # a crash may have left .tmp files behind
     args = list(sys.argv if argv is None else argv)
     target = _target_from_args(args)
 
@@ -119,13 +119,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     if icon_file.exists():
         app.setWindowIcon(QIcon(str(icon_file)))
 
-    # Druga instancja tylko przekazuje ścieżkę i kończy pracę
+    # A second instance only forwards its path and exits
     if _send_to_running_instance(target):
         return 0
 
     settings = config.load_settings()
     window = MainWindow(settings, target)
-    server = _start_ipc_server(window)   # trzymamy referencję przez cały czas życia aplikacji
+    server = _start_ipc_server(window)   # keep a reference for the app's lifetime
     window.show()
     window.raise_()
     window.activateWindow()

@@ -1,4 +1,4 @@
-"""Buduje samodzielny ImageNotes.exe (PyInstaller) — do wysłania komuś bez Pythona."""
+"""Build a standalone ImageNotes.exe (PyInstaller) for someone who has no Python."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from imagenotes import config  # noqa: E402
 DIST = PROJECT_ROOT / "dist"
 BUILD = PROJECT_ROOT / "build"
 
-# Transportowe moduły Qt, których aplikacja nie używa — bez nich paczka jest znacznie mniejsza
+# Qt modules the app does not use; excluding them shrinks the package a lot
 EXCLUDES = [
     "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets", "PySide6.QtWebEngineQuick",
     "PySide6.QtQuick", "PySide6.QtQml", "PySide6.QtQuick3D", "PySide6.QtQuickWidgets",
@@ -32,55 +32,46 @@ EXCLUDES = [
     "tkinter", "unittest", "pydoc_data", "matplotlib", "numpy", "PIL", "setuptools", "pip",
 ]
 
-INSTRUCTIONS = """ImageNotes — jak uruchomić
-===========================
+INSTRUCTIONS = """ImageNotes - how to run
+=======================
 
-Autor: Adam Warzecha.   Copyright (c) 2026 Adam Warzecha — wszelkie prawa
-zastrzeżone. Program przekazany do użytku prywatnego; nie wolno podawać się
-za jego autora ani rozpowszechniać go pod własnym nazwiskiem.
+1. Unpack this folder anywhere (Desktop, D:\\ , ...).
+2. Double-click ImageNotes.exe. There is nothing to install.
 
-1. Wypakuj ten folder gdziekolwiek (np. na Pulpit albo do D:\\ ).
-2. Uruchom ImageNotes.exe — dwuklik. Nic nie trzeba instalować.
+The interface is in Polish.
 
-Przy pierwszym uruchomieniu Windows może pokazać niebieskie okno
-"System Windows ochronił Twój komputer" (SmartScreen) — to normalne przy
-programach bez płatnego podpisu. Kliknij:
-    "Więcej informacji"  ->  "Uruchom mimo to"
+The first time, Windows may show a blue "Windows protected your PC" box
+(SmartScreen). That is normal for a program without a paid code signature:
+    More info  ->  Run anyway
 
-JAK ROBIĆ NOTATKI NA ZDJĘCIU
-----------------------------
-* Otwieranie zdjęcia: przeciągnij plik (JPG/PNG) NA ImageNotes.exe
-  albo uruchom program i wciśnij Ctrl+O.
-* Przesuwanie po zdjęciu: przytrzymaj PRAWY przycisk myszy.
-* Przybliżanie: kółko myszy (przybliża tam, gdzie jest kursor).
-* Notatki: panel w prawym górnym rogu — tekst (T), strzałka (A),
-  krzyżyk (X), checkmark (C), rysowanie odręczne (B).
-* Kolor, grubość, rozmiar i kąt: suwaki/próbki w tym samym panelu.
-* Przesuwanie gotowej notatki: klawisz V, potem przeciągnij ją myszką
-  (dwuklik na tekście = edycja, Del = usuń, Ctrl+Z = cofnij).
-* Ostatnio edytowane zdjęcia: okrągły bąbelek w lewym górnym rogu.
-* Dopasowanie zdjęcia do okna: Ctrl+0. Pełny ekran: F11.
+MAKING NOTES ON AN IMAGE
+------------------------
+* Open an image: drag a file (JPG/PNG) ONTO ImageNotes.exe, or start the
+  program and press Ctrl+O.
+* Pan: hold the RIGHT mouse button.
+* Zoom: mouse wheel (zooms where the cursor is).
+* Tools: the panel in the top-right corner - text (T), arrow (A), cross (X),
+  checkmark (C), freehand (B), select/move (V).
+* Colour, line width, text size and angle: the swatches and sliders in the
+  same panel.
+* Move a note you already made: press V, then drag it. Double-click text to
+  edit it, Del deletes, Ctrl+Z undoes.
+* Recently edited images: the round bubble in the top-left corner.
+* Fit the image to the window: Ctrl+0. Full screen: F11.
 
-GDZIE ZAPISUJĄ SIĘ NOTATKI
---------------------------
-Program nie zmienia Twojego oryginalnego zdjęcia. Obok ImageNotes.exe
-tworzy folder "workspace" i po każdej edycji nadpisuje tam jeden plik
-z wypalonymi notatkami (+ plik .json z listą notatek, dzięki któremu
-po ponownym otwarciu zdjęcia możesz je dalej edytować).
+WHERE THE NOTES ARE SAVED
+-------------------------
+The program never touches your original image. Next to ImageNotes.exe it
+creates a "workspace" folder and rewrites one file there with the notes baked
+in, plus a matching .json file that lists the notes - that is what lets you
+edit them again after reopening the image.
 
-WSKAZÓWKA
----------
-Możesz zrobić skrót na pulpicie: kliknij ImageNotes.exe prawym ->
-"Pokaż więcej opcji" -> "Wyślij do" -> "Pulpit (utwórz skrót)".
-Wtedy wystarczy przeciągnąć zdjęcie na ten skrót.
+TIP
+---
+For a desktop shortcut: right-click ImageNotes.exe -> "Show more options" ->
+"Send to" -> "Desktop (create shortcut)". Then simply drag an image onto it.
 
-PODPIS AUTORA
--------------
-* w programie: dolna linia panelu narzędzi (klik = okno "O programie")
-  oraz tytuł okna,
-* w każdym zapisanym zdjęciu, w metadanych pliku: Author / Artist / Copyright,
-* we właściwościach pliku ImageNotes.exe (prawy klik -> Właściwości ->
-  zakładka "Szczegóły": Firma, Opis, Prawa autorskie).
+Author: Adam Warzecha. MIT licence - see the repository for details.
 """
 
 VERSION_INFO = """\\
@@ -100,15 +91,15 @@ VSVersionInfo(
       StringTable(
         '040904B0',
         [StringStruct('CompanyName', 'Adam Warzecha'),
-         StringStruct('FileDescription', 'ImageNotes - notatki na zdjeciach i mapach (autor: Adam Warzecha)'),
+         StringStruct('FileDescription', 'ImageNotes - annotate images and large maps'),
          StringStruct('FileVersion', '1.0.0'),
          StringStruct('InternalName', 'ImageNotes'),
-         StringStruct('LegalCopyright', 'Copyright (c) 2026 Adam Warzecha. All rights reserved.'),
-         StringStruct('LegalTrademarks', 'Adam Warzecha'),
+         StringStruct('LegalCopyright', 'Copyright (c) 2026 Adam Warzecha'),
+         StringStruct('LegalTrademarks', 'ImageNotes'),
          StringStruct('OriginalFilename', 'ImageNotes.exe'),
-         StringStruct('ProductName', 'ImageNotes by Adam Warzecha'),
+         StringStruct('ProductName', 'ImageNotes'),
          StringStruct('ProductVersion', '1.0.0'),
-         StringStruct('Comments', 'Autor: Adam Warzecha. Program prywatny - nie wolno przypisywac sobie autorstwa.')])
+         StringStruct('Comments', 'MIT licensed. Author: Adam Warzecha.')])
     ]),
     VarFileInfo([VarStruct('Translation', [1033, 1200])])
   ]
@@ -118,10 +109,10 @@ VSVersionInfo(
 
 def check_pyinstaller() -> str:
     try:
-        import PyInstaller  # noqa: F401 - tylko sprawdzenie obecności
+        import PyInstaller  # noqa: F401 - presence check only
         return "PyInstaller"
     except ImportError:
-        print("BŁĄD: brak PyInstallera. Zainstaluj w tym samym interpreterze:")
+        print("error: PyInstaller is missing. Install it into the same interpreter:")
         print(f'  uv pip install --python "{sys.executable}" --break-system-packages pyinstaller')
         raise SystemExit(1)
 
@@ -163,17 +154,17 @@ def build(onefile: bool) -> Path:
         command += ["--exclude-module", module]
     command.append(str(entry))
 
-    print("Buduję:", " ".join(command[:8]), "...")
+    print("Building:", " ".join(command[:8]), "...")
     subprocess.run(command, check=True, cwd=str(PROJECT_ROOT))
 
     exe = DIST / f"{config.APP_NAME}.exe"
     if not exe.exists():
-        raise SystemExit("BŁĄD: nie znalazłem zbudowanego pliku EXE")
+        raise SystemExit("error: the built exe was not found")
     return exe
 
 
 def package(exe: Path, onefile: bool) -> Path:
-    """Tworzy ZIP do wysłania: EXE (lub cały folder) + instrukcja."""
+    """Build the ZIP to hand over: the exe (or the whole folder) plus a readme."""
     zip_path = DIST / f"{config.APP_NAME}-{config.VERSION}-win64-portable.zip"
     if zip_path.exists():
         zip_path.unlink()
@@ -184,14 +175,14 @@ def package(exe: Path, onefile: bool) -> Path:
             for path in sorted((DIST / config.APP_NAME).rglob("*")):
                 if path.is_file():
                     archive.write(path, str(path.relative_to(DIST)))
-        archive.writestr("JAK-URUCHOMIC.txt", INSTRUCTIONS)
+        archive.writestr("README.txt", INSTRUCTIONS)
     return zip_path
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Buduje ImageNotes.exe")
-    parser.add_argument("--onedir", action="store_true", help="folder z EXE zamiast jednego pliku")
-    parser.add_argument("--no-zip", action="store_true", help="nie twórz paczki ZIP")
+    parser = argparse.ArgumentParser(description="Build ImageNotes.exe")
+    parser.add_argument("--onedir", action="store_true", help="a folder with the exe instead of a single file")
+    parser.add_argument("--no-zip", action="store_true", help="do not create the ZIP")
     args = parser.parse_args()
 
     shutil.rmtree(BUILD, ignore_errors=True)
@@ -202,8 +193,8 @@ def main() -> int:
 
     if not args.no_zip:
         zip_path = package(exe, onefile)
-        print(f"Paczka do wysłania: {zip_path}  ({zip_path.stat().st_size / 1024 / 1024:.1f} MB)")
-    print("\nTest: uruchom EXE i przeciągnij na niego zdjęcie (JPG/PNG).")
+        print(f"ZIP to hand over: {zip_path}  ({zip_path.stat().st_size / 1024 / 1024:.1f} MB)")
+    print("\nTest: run the exe and drop a JPG/PNG onto it.")
     return 0
 
 

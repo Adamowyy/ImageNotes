@@ -1,4 +1,4 @@
-"""Magazyn plików: ścieżki robocze, sidecar z adnotacjami, miniatury i lista ostatnich."""
+"""File store: working paths, the annotation sidecar, thumbnails and the recent list."""
 
 from __future__ import annotations
 
@@ -16,14 +16,14 @@ from PySide6.QtGui import QImage, QImageReader, QPixmap
 
 from . import config
 
-# Bez tego Qt odmawia otwarcia obrazów większych niż 256 MB (patrz config).
+# Without this Qt refuses images over 256 MB (see config).
 QImageReader.setAllocationLimit(config.QIMAGE_ALLOC_LIMIT_MB)
 
 
-# --- ścieżki --------------------------------------------------------------
+# --- paths ----------------------------------------------------------------
 
 def slug_for(source: Path) -> str:
-    """Stabilny identyfikator pliku źródłowego (nazwa + hash ścieżki)."""
+    """Stable id for a source file (name + hash of the path)."""
     try:
         raw = str(Path(source).resolve()).lower()
     except Exception:
@@ -48,7 +48,7 @@ def thumb_path(source: Path) -> Path:
 # --- sidecar --------------------------------------------------------------
 
 def read_annotations(sidecar: Path) -> List[dict]:
-    """Wczytuje surowe słowniki adnotacji; brak/uszkodzenie pliku => pusta lista."""
+    """Raw annotation dicts; a missing or corrupt file gives an empty list."""
     try:
         if not sidecar.exists():
             return []
@@ -72,10 +72,10 @@ def write_sidecar(sidecar: Path, source: Path, annotations: List[dict], key: str
     os.replace(tmp, sidecar)
 
 
-# --- miniatury ------------------------------------------------------------
+# --- thumbnails -----------------------------------------------------------
 
 def write_thumbnail(img: QImage, dest: Path) -> bool:
-    """Zapisuje miniaturę (maks. bok THUMB_PX). Zwraca False, gdy się nie udało."""
+    """Write a thumbnail (longest side THUMB_PX). False when it could not be written."""
     try:
         if img.isNull():
             return False
@@ -98,7 +98,7 @@ _thumb_cache: Dict[str, Tuple[float, QPixmap]] = {}
 
 
 def thumb_pixmap(entry: "RecentEntry", reffresh: bool = False) -> Optional[QPixmap]:
-    """Miniatura pozycji z listy ostatnich (z cache po czasie modyfikacji pliku)."""
+    """Thumbnail of a recent entry (cached by the file's modification time)."""
     key = entry.key
     try:
         stamp = entry.thumb.stat().st_mtime if entry.thumb.exists() else 0.0
@@ -117,7 +117,7 @@ def thumb_pixmap(entry: "RecentEntry", reffresh: bool = False) -> Optional[QPixm
 
 
 def _thumbnail_from_work(work: Path) -> Optional[QPixmap]:
-    """Awaryjne generowanie miniatury bez dekodowania całego (10k+) obrazu."""
+    """Fallback thumbnail that avoids decoding the whole (10k+) image."""
     try:
         if not work.exists():
             return None
@@ -133,7 +133,7 @@ def _thumbnail_from_work(work: Path) -> Optional[QPixmap]:
         return None
 
 
-# --- lista ostatnich ------------------------------------------------------
+# --- recent list ----------------------------------------------------------
 
 @dataclass
 class RecentEntry:
@@ -155,14 +155,14 @@ class RecentEntry:
 
     @property
     def open_target(self) -> Path:
-        """Co realnie otwieramy: źródło, a gdy zniknęło — wypalony obraz z notatkami."""
+        """What we actually open: the source, or the baked image once it is gone."""
         if self.source and self.source.exists():
             return self.source
         return self.work
 
 
 def recent_entries(limit: int = 10) -> List[RecentEntry]:
-    """Lista ostatnio edytowanych zdjęć, najnowsze pierwsze."""
+    """Recently edited images, newest first."""
     entries: List[RecentEntry] = []
     try:
         files = sorted(config.WORKSPACE_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
@@ -200,8 +200,7 @@ def last_entry() -> Optional[RecentEntry]:
 
 
 def cleanup_temp_files() -> int:
-    """Usuwa pliki .tmp osierocone przez przerwany zapis (świeży start = brak konfliktów,
-    bo aplikacja wymusza pojedynczą instancję)."""
+    """Remove .tmp files orphaned by an interrupted write."""
     removed = 0
     for folder in (config.WORKSPACE_DIR, config.THUMBS_DIR):
         try:

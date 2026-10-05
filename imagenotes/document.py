@@ -1,4 +1,4 @@
-"""Dokument (zdjęcie + adnotacje), piramida mipmap, loader w tle i autozapis."""
+"""Document (image + annotations), mipmap pyramid, background loader and autosave."""
 
 from __future__ import annotations
 
@@ -16,12 +16,12 @@ from PySide6.QtGui import QColor, QImage, QImageReader, QImageWriter, QPainter
 from . import config, storage
 from .annotations import Annotation, render_annotations
 
-# Bez tego Qt odmawia otwarcia obrazów większych niż 256 MB (patrz config).
+# Without this Qt refuses images over 256 MB (see config).
 QImageReader.setAllocationLimit(config.QIMAGE_ALLOC_LIMIT_MB)
 
 
 def _write_image(buffer: QImage, path: Path) -> bool:
-    """Zapisuje obraz, wpisując w metadane autora programu."""
+    """Write the image and stamp the author into its metadata."""
     writer = QImageWriter(str(path), config.SAVE_FORMAT.encode("ascii"))
     writer.setQuality(config.SAVE_QUALITY)
     for key, value in config.IMAGE_METADATA.items():
@@ -32,7 +32,7 @@ def _write_image(buffer: QImage, path: Path) -> bool:
 
 
 class Document:
-    """Otwarte zdjęcie: obraz bazowy (poziom 0), piramida mipmap i lista adnotacji."""
+    """Open image: the base level, the mipmap pyramid and the annotation list."""
 
     def __init__(self, source: Path, base: QImage, annotations: Optional[List[Annotation]] = None):
         self.source = Path(source)
@@ -47,7 +47,7 @@ class Document:
         self.saved_at: float = 0.0
         self.loaded_at: float = time.time()
 
-    # --- geometria obrazu ------------------------------------------------
+    # --- image geometry --------------------------------------------------
     @property
     def width(self) -> int:
         return self.base.width()
@@ -57,7 +57,7 @@ class Document:
         return self.base.height()
 
     def build_pyramid(self, min_px: int = config.PYRAMID_MIN_PX) -> None:
-        """Buduje poziomy o połowę mniejsze aż najdłuższy bok spadnie poniżej min_px."""
+        """Halve the image until the longest side drops below min_px."""
         level = self.base
         while max(level.width(), level.height()) > min_px and level.width() > 2 and level.height() > 2:
             level = level.scaled(
@@ -68,7 +68,7 @@ class Document:
             self.levels.append(level)
 
     def pick_level(self, scale: float) -> Tuple[QImage, int]:
-        """Poziom piramidy, z którego rysować, oraz jego mnożnik (2**poziom)."""
+        """Pyramid level to draw from, plus its multiplier (2**level)."""
         level = 0
         if scale < 0.5 and scale > 0:
             level = int(math.ceil(math.log2(0.5 / scale)))
@@ -79,10 +79,10 @@ class Document:
         return [a.to_dict() for a in self.annotations]
 
 
-# --- ładowanie w tle ------------------------------------------------------
+# --- background loading ---------------------------------------------------
 
 class ImageLoader(QThread):
-    """Dekoduje obraz i buduje piramidę poza wątkiem UI (10k+ pliki to kilka sekund)."""
+    """Decodes the image and builds the pyramid off the UI thread (10k+ files take seconds)."""
 
     loaded = Signal(object)   # Document
     failed = Signal(str)
@@ -91,7 +91,7 @@ class ImageLoader(QThread):
         super().__init__(parent)
         self.source = Path(source)
 
-    def run(self) -> None:  # noqa: D102 - kontrakt QThread
+    def run(self) -> None:  # noqa: D102 - QThread contract
         try:
             if not self.source.exists():
                 raise FileNotFoundError(f"Nie ma pliku: {self.source}")
@@ -105,14 +105,14 @@ class ImageLoader(QThread):
             annotations = [Annotation.from_dict(d) for d in storage.read_annotations(storage.sidecar_path(self.source))]
             doc = Document(self.source, img, annotations)
             doc.build_pyramid()
-            # Miniatura od razu — pozycja pojawia się w "ostatnich" nawet bez edycji
+            # Thumbnail right away, so the image shows up under "recent" even without edits
             storage.write_thumbnail(img, doc.thumb)
             self.loaded.emit(doc)
-        except Exception as exc:  # pragma: no cover - ścieżka awaryjna
+        except Exception as exc:  # pragma: no cover - error path
             self.failed.emit(str(exc))
 
 
-# --- autozapis ------------------------------------------------------------
+# --- autosave -------------------------------------------------------------
 
 @dataclass
 class SaveJob:
@@ -126,9 +126,9 @@ class SaveJob:
 
 
 class Saver(QObject):
-    """Wątek zapisu: wypala adnotacje w obraz i nadpisuje plik roboczy."""
+    """Writer thread: bakes the annotations into the image and rewrites the working file."""
 
-    saved = Signal(str, bool, str)   # key, ok, komunikat
+    saved = Signal(str, bool, str)   # key, ok, message
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -151,7 +151,7 @@ class Saver(QObject):
             return bool(self._jobs) or self._busy
 
     def flush(self, timeout: float = 20.0) -> bool:
-        """Czeka, aż kolejka zapisu będzie pusta (używane przy zamykaniu/zmianie zdjęcia)."""
+        """Wait until the save queue is empty (used on close and when switching image)."""
         deadline = time.monotonic() + timeout
         with self._cond:
             while (self._jobs or self._busy) and time.monotonic() < deadline:
@@ -165,7 +165,7 @@ class Saver(QObject):
             self._cond.notify_all()
         self._thread.join(timeout=2.0)
 
-    # --- wnętrze ---------------------------------------------------------
+    # --- internals -------------------------------------------------------
     def _loop(self) -> None:
         while True:
             with self._cond:
@@ -192,7 +192,7 @@ class Saver(QObject):
                 self._buffer = buffer
             painter = QPainter(buffer)
             if config.SAVE_FORMAT.upper() == "JPEG" and job.base.hasAlphaChannel():
-                # JPEG nie ma kanału alfa — przezroczystość komponujemy na biało
+                # JPEG has no alpha channel, so composite transparency onto white
                 buffer.fill(QColor(255, 255, 255))
                 painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
                 painter.drawImage(0, 0, job.base)
@@ -207,7 +207,7 @@ class Saver(QObject):
             tmp = job.work.with_name(job.work.name + ".tmp")
             if not _write_image(buffer, tmp):
                 raise RuntimeError("zapis obrazu nie powiódł się")
-            os.replace(tmp, job.work)          # podmiana atomowa — brak uszkodzonych plików
+            os.replace(tmp, job.work)          # atomic swap, no half-written files
 
             storage.write_thumbnail(buffer, job.thumb)
             storage.write_sidecar(job.sidecar, Path(job.source), job.annotations, job.key)

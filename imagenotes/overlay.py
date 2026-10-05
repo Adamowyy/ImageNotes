@@ -1,5 +1,4 @@
-"""Lewitujące elementy interfejsu: panel narzędzi (prawy górny róg) i bąbelek ostatnich zdjęć.
-"""
+"""Floating UI: the tool panel (top-right corner) and the recent-images bubble."""
 
 from __future__ import annotations
 
@@ -61,7 +60,7 @@ TOOLS = [
 
 
 class ToolPanel(QWidget):
-    """Panel narzędzi: tryb, kolor, grubość, rozmiar, kąt i akcje. Zawsze w prawym górnym rogu."""
+    """Tool panel: mode, colour, width, size, angle and actions. Always top-right."""
 
     toolChanged = Signal(str)
     colorChanged = Signal(str)
@@ -92,7 +91,7 @@ class ToolPanel(QWidget):
         root.setContentsMargins(13, 11, 13, 13)
         root.setSpacing(9)
 
-        # --- nagłówek: tytuł + wskaźnik zapisu ---
+        # header: title + save indicator
         header = QHBoxLayout()
         header.setSpacing(6)
         title = QLabel("NOTATKI")
@@ -106,11 +105,8 @@ class ToolPanel(QWidget):
         header.addWidget(self._state)
         root.addLayout(header)
 
-        # --- narzędzia ---
         root.addWidget(self._row_tools())
-        # --- kolory ---
         root.addWidget(self._row_colors())
-        # --- suwaki ---
         self._width_slider, self._width_label, row = self._slider_row(
             "Grubo\u015b\u0107", 1, 80, config.DEFAULT_WIDTH, self.widthChanged
         )
@@ -123,14 +119,12 @@ class ToolPanel(QWidget):
             "K\u0105t", 0, 359, config.DEFAULT_ANGLE, self.angleChanged, suffix="\u00b0"
         )
         root.addWidget(row)
-        # --- akcje ---
         root.addWidget(self._row_actions())
-        # --- podpis autora ---
         root.addWidget(self._signature_label())
 
         self.set_tool(TOOL_SELECT)
 
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------------
     def _row_tools(self) -> QWidget:
         row = QWidget()
         layout = QHBoxLayout(row)
@@ -209,7 +203,7 @@ class ToolPanel(QWidget):
         return slider, value_label, row
 
     def _signature_label(self) -> QLabel:
-        """Podpis autora w panelu — kliknięcie otwiera okno »O programie«."""
+        """Author signature in the panel; clicking it opens the About box."""
         label = QLabel(config.AUTHOR_LINE)
         label.setStyleSheet("color:#8b93a1; font-size:11px; letter-spacing:1px;")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -259,7 +253,7 @@ class ToolPanel(QWidget):
         btn.clicked.connect(signal.emit)
         return btn
 
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------------
     def _pick_color(self, color: str) -> None:
         self.gestureStarted.emit()
         self._current_color = color
@@ -290,7 +284,7 @@ class ToolPanel(QWidget):
 
     def set_values(self, width: Optional[int] = None, size: Optional[int] = None,
                    angle: Optional[float] = None, color: Optional[str] = None) -> None:
-        """Ustawia suwaki bez emitowania sygnałów (synchronizacja z zaznaczoną adnotacją)."""
+        """Set the sliders without emitting signals (sync with the selected annotation)."""
         if width is not None:
             self._width_slider.blockSignals(True)
             self._width_slider.setValue(int(width))
@@ -332,11 +326,11 @@ class ToolPanel(QWidget):
 
 
 class RecentPopup(QWidget):
-    """Lista ostatnio edytowanych zdjęć (otwierana z bąbelka w lewym górnym rogu)."""
+    """List of recently edited images (opened from the bubble in the top-left corner)."""
 
-    openRequested = Signal(str)     # ścieżka do otwarcia
-    pickRequested = Signal()        # wybór pliku z dysku
-    folderRequested = Signal()      # pokaż folder ostatniego pliku
+    openRequested = Signal(str)     # path to open
+    pickRequested = Signal()        # pick a file from disk
+    folderRequested = Signal()      # reveal the folder of the last file
     closeRequested = Signal()
 
     def __init__(self, parent=None):
@@ -429,7 +423,7 @@ class RecentPopup(QWidget):
 
 
 class RecentBubble(QToolButton):
-    """Okrągły bąbelek w lewym górnym rogu: miniatura ostatnio edytowanego zdjęcia."""
+    """Round bubble in the top-left corner: thumbnail of the most recently edited image."""
 
     clickedBubble = Signal()
 

@@ -1,4 +1,4 @@
-"""Kontrola wizualna na PRAWDZIWYM backendzie Qt (windows) — czcionki, wygląd, HUD."""
+"""Visual check on the REAL Qt backend (windows): fonts, layout, HUD."""
 
 from __future__ import annotations
 
@@ -54,10 +54,10 @@ def move(canvas, pos):
 
 
 def main() -> int:
-    target = Path(sys.argv[1]) if len(sys.argv) > 1 else sample(ARTIFACTS / "wizual_2400x1500.png")
+    target = Path(sys.argv[1]) if len(sys.argv) > 1 else sample(ARTIFACTS / "sample_2400x1500.png")
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
 
-    # Kontrola wizualna nie ma zaśmiecać prawdziwego workspace/ ani listy ostatnich
+    # The visual check must not litter the real workspace/ or the recent list
     import tempfile
     scratch = Path(tempfile.gettempdir()) / "imagenotes_visual_check"
     (scratch / "workspace" / ".thumbs").mkdir(parents=True, exist_ok=True)
@@ -67,11 +67,11 @@ def main() -> int:
     config.ensure_dirs()
 
     app = QApplication.instance() or QApplication([])
-    print(f"Backend Qt: {app.platformName()} | rodzin czcionek: {len(QFontDatabase.families())}")
-    print(f"Czcionka adnotacji: {QFontInfo(font_for(64)).family()!r}")
+    print(f"Qt backend: {app.platformName()} | font families: {len(QFontDatabase.families())}")
+    print(f"Annotation font: {QFontInfo(font_for(64)).family()!r}")
     box_width = text_local_rect("NOTATKA", 64).width()
-    print(f"Szerokość 'NOTATKA' przy 64 px: {box_width:.1f} px "
-          f"({'OK — prawdziwe glify' if box_width < 340 else 'PODEJRZANE — puste prostokąty'})")
+    print(f"Width of 'NOTATKA' at 64 px: {box_width:.1f} px "
+          f"({'OK - real glyphs' if box_width < 340 else 'SUSPICIOUS - empty boxes'})")
 
     settings = dict(config.DEFAULTS)
     window = MainWindow(settings, target)
@@ -81,14 +81,14 @@ def main() -> int:
     def build() -> None:
         canvas = window.canvas
         canvas.zoom_to(canvas.fit_scale())
-        # tekst
+        # text
         canvas.set_tool(TOOL_TEXT)
         canvas.set_color("#ff2d2d")
         canvas.set_size(140)
         press(canvas, canvas.to_screen(QPointF(300, 380)))
-        canvas._editor.setText("Baza zombie  \u2192  tu")
+        canvas._editor.setText("Notatka  \u2192  tutaj")
         canvas.commit_edit()
-        # drugi tekst, obrócony
+        # second text, rotated
         canvas.set_color("#ffd400")
         canvas.set_size(110)
         canvas.set_angle(0)
@@ -96,21 +96,21 @@ def main() -> int:
         canvas._editor.setText("Loot")
         canvas.commit_edit()
         canvas.set_angle(35)
-        # strzałka
+        # arrow
         canvas.set_tool(TOOL_ARROW)
         canvas.set_color("#2bff5a")
         canvas.set_width(22)
         press(canvas, canvas.to_screen(QPointF(700, 1000)))
         move(canvas, canvas.to_screen(QPointF(1250, 620)))
         press(canvas, canvas.to_screen(QPointF(1250, 620)), kind=QEvent.Type.MouseButtonRelease)
-        # X
+        # cross
         canvas.set_tool(TOOL_CROSS)
         canvas.set_color("#ff2d2d")
         canvas.set_width(18)
         press(canvas, canvas.to_screen(QPointF(1750, 300)))
         move(canvas, canvas.to_screen(QPointF(2050, 560)))
         press(canvas, canvas.to_screen(QPointF(2050, 560)), kind=QEvent.Type.MouseButtonRelease)
-        # rysowanie odręczne
+        # freehand
         canvas.set_tool(TOOL_STROKE)
         canvas.set_color("#2ba7ff")
         canvas.set_width(16)
@@ -124,13 +124,13 @@ def main() -> int:
         window._reposition_overlays()
         app.processEvents()
 
-        window.grab().save(str(ARTIFACTS / "okno_prawdziwe.png"), "PNG")
-        print(f"Zrzut: {ARTIFACTS / 'okno_prawdziwe.png'}")
+        window.grab().save(str(ARTIFACTS / "window_real.png"), "PNG")
+        print(f"Screenshot: {ARTIFACTS / 'window_real.png'}")
 
-        # drugi zrzut: zbliżenie na notatkę (test ostrości tekstu w pełnej rozdzielczości)
+        # second shot: close-up on a note (checks text sharpness at full resolution)
         canvas.zoom_to(0.8, QPointF(canvas.width() * 0.35, canvas.height() * 0.5))
         app.processEvents()
-        window.grab().save(str(ARTIFACTS / "okno_zoom.png"), "PNG")
+        window.grab().save(str(ARTIFACTS / "window_zoom.png"), "PNG")
         window.close()
         app.quit()
 
