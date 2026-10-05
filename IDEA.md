@@ -1,1 +1,0 @@
-Ten projekt pozwoli na płynne i szybkie notowanie notatek na zdjęciach m.in o wysokich rozdzielczościach jednocześnie pozwalając poruszać się po zdjęciu myszką przytrzymując prawy myszki. Obecnie paint oraz domyślne edytory albo lagują albo nie pozwalają swobodnie się poruszać.

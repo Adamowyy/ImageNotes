@@ -1,4 +1,4 @@
-"""Ścieżki projektu, ustawienia użytkownika i stałe konfiguracyjne."""
+"""Paths, user settings and build-time constants."""
 
 from __future__ import annotations
 
@@ -10,22 +10,22 @@ from pathlib import Path
 APP_NAME = "ImageNotes"
 VERSION = "1.0.0"
 
-# --- Autor (podpis w kodzie, w interfejsie, w metadanych plików i we właściwościach EXE) ---
+# --- Author (signature in source, UI, saved-file metadata and exe properties) ---
 AUTHOR = "Adam Warzecha"
 YEAR = "2026"
-COPYRIGHT = f"Copyright (c) {YEAR} {AUTHOR}. All rights reserved."
+COPYRIGHT = f"Copyright (c) {YEAR} {AUTHOR}"
 AUTHOR_LINE = f"\u00a9 {YEAR} {AUTHOR}"
-AUTHOR_CREDIT = f"by {AUTHOR}"          # „by Adam Warzecha” — w tytule okna
+AUTHOR_CREDIT = f"by {AUTHOR}"          # "by Adam Warzecha" in the window title
 
-# Wpisywane w metadane każdego zapisanego pliku (PNG: tEXt, JPEG: komentarz).
-# Tylko znaki ASCII — tEXt w PNG jest Latin-1 i inne znaki mogłyby zostać odrzucone.
+# Written into every saved file (PNG tEXt, JPEG comment). ASCII only: PNG tEXt is
+# Latin-1, so other characters can be rejected.
 IMAGE_METADATA = {
     "Author": AUTHOR,
     "Artist": AUTHOR,
     "Copyright": COPYRIGHT,
     "Software": f"{APP_NAME} {VERSION}",
     "Source": f"{APP_NAME} - {AUTHOR}",
-    "Description": f"Notatki na zdjeciu - {APP_NAME} by {AUTHOR}",
+    "Description": f"{APP_NAME} - image annotation by {AUTHOR}",
 }
 
 
@@ -44,7 +44,7 @@ def _is_writable(folder: Path) -> bool:
 
 
 def _data_root() -> Path:
-    """Katalog na dane użytkownika (workspace + ustawienia)."""
+    """Directory holding user data (workspace + settings)."""
     if _is_frozen():
         exe_dir = Path(sys.executable).resolve().parent
         if _is_writable(exe_dir):
@@ -59,7 +59,7 @@ def _data_root() -> Path:
 
 
 def _assets_root() -> Path:
-    """Katalog z ikoną — w wersji spakowanej to katalog rozpakowania PyInstallera."""
+    """Icon directory: the PyInstaller unpack dir in a frozen build."""
     bundle = getattr(sys, "_MEIPASS", None)
     if bundle:
         return Path(bundle) / "assets"
@@ -67,33 +67,34 @@ def _assets_root() -> Path:
 
 
 APP_ROOT = _data_root()
-PROJECT_ROOT = APP_ROOT          # zgodność z wcześniejszymi odwołaniami
+PROJECT_ROOT = APP_ROOT          # kept for older references
 ASSETS_DIR = _assets_root()
 FROZEN = _is_frozen()
 
-# Katalog roboczy: tu ląduje "wypalony" obraz z adnotacjami (nadpisywany przy każdej edycji)
+# Scratch directory: the baked image with its annotations lands here, overwritten on every edit
 WORKSPACE_DIR = PROJECT_ROOT / "workspace"
 THUMBS_DIR = WORKSPACE_DIR / ".thumbs"
 
 SETTINGS_FILE = PROJECT_ROOT / "settings.json"
 
-# Obsługiwane rozszerzenia (QImage czyta je natywnie)
+# Suffixes QImage decodes natively
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff", ".gif"}
 
-SAVE_FORMAT = "PNG"            # "PNG" (bezstratny, ostre napisy) albo "JPEG" (dużo szybszy)
-SAVE_QUALITY = 85              # PNG: 85 ≈ 6 s/145 MB · JPEG: 92 ≈ 1,1 s/21 MB
+# Saving a big map (10234x8314, 325 MB in RAM): PNG 20 about 50 s / 128 MB, JPEG 90 about 1.1 s / 21 MB. For PNG a higher "quality" means less zlib work, so the write is faster and the file larger.
+SAVE_FORMAT = "PNG"            # "PNG" (lossless, sharp text) or "JPEG" (much faster)
+SAVE_QUALITY = 85              # PNG: 85 ~ 6 s/145 MB · JPEG: 92 ~ 1.1 s/21 MB
 SAVE_SUFFIX = ".png" if SAVE_FORMAT.upper() == "PNG" else ".jpg"
 
-AUTOSAVE_DELAY_MS = 2000       # debounce autozapisu po ostatniej edycji
-THUMB_PX = 320                 # maksymalny bok miniatury do bąbelka "ostatnie zdjęcia"
-PYRAMID_MIN_PX = 1024          # piramida mipmap budowana aż największy bok < PYRAMID_MIN_PX
+AUTOSAVE_DELAY_MS = 2000       # debounce after the last edit
+THUMB_PX = 320                 # longest side of the recent-images thumbnail
+PYRAMID_MIN_PX = 1024          # mipmap levels are built until the longest side drops below this
 
 QIMAGE_ALLOC_LIMIT_MB = 4096
 
-# --- Domyślne parametry narzędzi -----------------------------------------
+# --- Tool defaults --------------------------------------------------------
 DEFAULT_COLOR = "#ff2d2d"
-DEFAULT_WIDTH = 10             # grubość linii w px zdjęcia
-DEFAULT_TEXT_SIZE = 72         # rozmiar czcionki w px zdjęcia
+DEFAULT_WIDTH = 10             # line width in image px
+DEFAULT_TEXT_SIZE = 72         # font size in image px
 DEFAULT_ANGLE = 0
 
 PALETTE = ["#ff2d2d", "#ffd400", "#2bff5a", "#2ba7ff", "#ffffff", "#111111"]
@@ -109,14 +110,14 @@ DEFAULTS = {
 
 
 def ensure_dirs() -> None:
-    """Tworzy katalogi robocze (bezpieczne przy wielokrotnym wywołaniu)."""
+    """Create the working directories (safe to call repeatedly)."""
     WORKSPACE_DIR.mkdir(parents=True, exist_ok=True)
     THUMBS_DIR.mkdir(parents=True, exist_ok=True)
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def load_settings() -> dict:
-    """Wczytuje ustawienia z settings.json, uzupełniając brakujące klucze domyślnymi."""
+    """Read settings.json, filling in every missing key with its default."""
     data = dict(DEFAULTS)
     try:
         if SETTINGS_FILE.exists():
@@ -124,13 +125,13 @@ def load_settings() -> dict:
             if isinstance(raw, dict):
                 data.update(raw)
     except Exception:
-        # Uszkodzone ustawienia nie mogą blokować startu aplikacji
+        # Broken settings must not stop the app from starting
         pass
     return data
 
 
 def save_settings(data: dict) -> None:
-    """Zapisuje ustawienia (best-effort — błąd zapisu nie przerywa pracy)."""
+    """Write the settings; a failed write is not fatal."""
     try:
         SETTINGS_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     except Exception:

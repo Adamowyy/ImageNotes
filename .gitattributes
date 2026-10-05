@@ -1,4 +1,4 @@
-# Normalizacja końców linii — w repo trzymamy LF, pliki binarne bez zmian
+# Line endings: LF in the repository, binaries untouched
 * text=auto
 
 *.py   text eol=lf

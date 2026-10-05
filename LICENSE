@@ -1,43 +1,21 @@
-ImageNotes — notatki na zdjęciach i mapach
-Copyright (c) 2026 Adam Warzecha. Wszelkie prawa zastrzeżone.
+MIT License
 
-Autor: Adam Warzecha
-Program: ImageNotes 1.0.0 (Windows, Python + PySide6/Qt 6)
+Copyright (c) 2026 Adam Warzecha
 
-------------------------------------------------------------------
-Wszelkie prawa zastrzeżone
-------------------------------------------------------------------
-Program ImageNotes wraz z całym kodem źródłowym, grafiką i dokumentacją
-jest autorstwa Adama Warzechy i stanowi jego własność.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-Bez pisemnej zgody autora nie wolno:
-  * przypisywać sobie autorstwa tego programu ani jego części,
-  * rozpowszechniać, sprzedawać ani udostępniać go jako własnego
-    produktu (także pod inną nazwą),
-  * usuwać ani zmieniać informacji o autorze zawartych w kodzie,
-    interfejsie, metadanych zapisywanych plików i właściwościach
-    pliku ImageNotes.exe.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-Korzystanie z programu przez autora oraz osoby, którym autor go
-przekazał, jest dozwolone nieodpłatnie.
-
-------------------------------------------------------------------
-All rights reserved
-------------------------------------------------------------------
-ImageNotes and its entire source code, artwork and documentation were
-created by Adam Warzecha and remain his property.
-
-Without the author's written permission you may not claim authorship
-of this program or any part of it, redistribute or sell it as your own
-product (including under a different name), or remove/alter the author
-information embedded in the source code, user interface, saved-file
-metadata and in the ImageNotes.exe file properties.
-
-Use by the author and by people to whom the author handed the program
-is permitted free of charge.
-
-------------------------------------------------------------------
-Podpis autora znajdziesz też:
-  * w interfejsie — dolna linia panelu narzędzi (klik = okno "O programie"),
-  * w metadanych każdego zapisanego pliku: Author / Artist / Copyright,
-  * we właściwościach pliku ImageNotes.exe (zakładka Szczegóły).
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

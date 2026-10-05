@@ -1,15 +1,21 @@
-# Pliki robocze z notatkami (nadpisywane przy każdej edycji)
+# Scratch files holding annotations (overwritten on every edit)
 workspace/
 
-# Gotowe paczki i śmieci po budowaniu EXE
+# Build output and packaged releases
 dist/
 build/
 
-# Ustawienia lokalne (rozmiar okna, ostatni katalog)
+# Local settings (window size, last directory)
 settings.json
 
-# Zrzuty i artefakty testów
+# Test screenshots and artifacts
 tests/artifacts/
 
 __pycache__/
 *.pyc
+
+# Environments and editors
+.venv/
+venv/
+.idea/
+.vscode/
